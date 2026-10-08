@@ -1,0 +1,19 @@
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+
+# PyCharm
+.idea/
+
+# 大数据集（不上传）
+*.csv
+!batch_prediction_template.csv
+
+# 系统文件
+Thumbs.db
+Desktop.ini
+
+# 虚拟环境
+venv/
+.venv/

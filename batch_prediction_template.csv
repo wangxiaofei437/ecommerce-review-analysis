@@ -1,0 +1,6 @@
+comment_text,rating,platform,product_category,comment_time,is_additional,reply_status,sentiment_label,problem_label,fake_risk_label,useful_votes
+这个产品质量非常好，做工精细，物流也很快，客服态度也很好，非常满意，强烈推荐大家购买！,5,淘宝,家用电器（冰箱/空调/洗衣机）,2024-01-15 10:30:00,False,True,正面,False,低风险,10
+还行,3,京东,数码产品,2024-01-16 14:20:00,False,False,中性,False,低风险,2
+收到货后发现质量很差，和描述完全不符，而且还有破损，非常失望，不建议购买。,1,天猫,服装鞋包,2024-01-17 09:15:00,False,True,负面,True,低风险,8
+好好好好好好好,5,淘宝,美妆个护,2024-01-18 16:45:00,False,False,正面,False,中风险,1
+性价比很高，外观设计也很漂亮，功能齐全，使用起来很方便，值得购买。,4,苏宁易购,运动户外,2024-01-19 11:00:00,False,True,正面,False,低风险,12

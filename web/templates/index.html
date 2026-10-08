@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>在线评论有用性预测 · 模型对比可视化大屏</title>
+  <meta name="viewport" content="width=1920, initial-scale=1" />
+  <link rel="stylesheet" href="/static/css/dashboard.css" />
+  <!-- Three.js & ECharts (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+</head>
+<body>
+  <canvas id="bg3d"></canvas>
+
+  <header class="dash-header">
+    <div class="header-left">
+      <span class="logo-dot"></span>
+      <span class="title">在线评论有用性预测 · 模型对比可视化大屏</span>
+    </div>
+    <div class="header-center" id="datetime"></div>
+    <div class="header-right">
+      <span class="status-dot"></span>
+      <span>Flask · Three.js · ECharts</span>
+    </div>
+  </header>
+
+  <!-- 工具栏：数据源 + 导入 + 导出 + 重置 -->
+  <section class="toolbar">
+    <div class="toolbar-left">
+      <span class="tb-label">当前数据源</span>
+      <span class="tb-source" id="tb-source">默认测试集</span>
+      <span class="tb-tag" id="tb-label-tag">已带标签</span>
+      <span class="tb-time" id="tb-time"></span>
+    </div>
+    <div class="toolbar-right">
+      <label class="btn btn-primary" for="file-input">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>
+        导入 CSV
+      </label>
+      <input id="file-input" type="file" accept=".csv,.txt" hidden />
+      <button class="btn btn-green" id="btn-export">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 21V9m0 0l-4 4m4-4l4 4M5 3h14"/></svg>
+        导出预测结果
+      </button>
+      <button class="btn btn-ghost" id="btn-reset">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
+        重置为测试集
+      </button>
+      <span class="up-status" id="up-status"></span>
+    </div>
+  </section>
+
+  <!-- 顶部 KPI -->
+  <section class="kpi-row" id="kpi-row">
+    <div class="kpi-card"><div class="kpi-label">样本数</div><div class="kpi-value" id="kpi-total">--</div></div>
+    <div class="kpi-card"><div class="kpi-label">有用评论</div><div class="kpi-value pos" id="kpi-useful">--</div></div>
+    <div class="kpi-card"><div class="kpi-label">无用评论</div><div class="kpi-value neg" id="kpi-useless">--</div></div>
+    <div class="kpi-card"><div class="kpi-label">有用占比</div><div class="kpi-value" id="kpi-ratio">--</div></div>
+    <div class="kpi-card"><div class="kpi-label">特征维度</div><div class="kpi-value" id="kpi-feat">--</div></div>
+    <div class="kpi-card"><div class="kpi-label">参与对比模型</div><div class="kpi-value" id="kpi-models">4</div></div>
+  </section>
+
+  <!-- 主体 3 列 × 2 行网格 -->
+  <main class="grid">
+    <!-- Row 1 -->
+    <section class="panel" id="panel-radar">
+      <h3>四模型综合性能雷达</h3>
+      <div class="chart" id="chart-radar"></div>
+    </section>
+
+    <section class="panel" id="panel-multi-metric">
+      <h3>四模型多指标分组柱状对比</h3>
+      <div class="chart" id="chart-multi-metric"></div>
+    </section>
+
+    <section class="panel" id="panel-cm">
+      <h3>混淆矩阵 · 切换模型查看
+        <span class="cm-tabs" id="cm-tabs">
+          <button class="cm-tab active" data-key="rf">RF</button>
+          <button class="cm-tab" data-key="lr">LR</button>
+          <button class="cm-tab" data-key="lgb">LGB</button>
+          <button class="cm-tab" data-key="ensemble">融合</button>
+        </span>
+      </h3>
+      <div class="chart" id="chart-cm"></div>
+    </section>
+
+    <!-- Row 2 -->
+    <section class="panel" id="panel-proba">
+      <h3>模型预测概率核密度分布</h3>
+      <div class="chart" id="chart-proba"></div>
+    </section>
+
+    <section class="panel" id="panel-feat">
+      <h3>特征重要度横向对比 · LGB / RF
+        <span class="cm-tabs" id="feat-tabs">
+          <button class="cm-tab active" data-key="lgb">LGB</button>
+          <button class="cm-tab" data-key="rf">RF</button>
+        </span>
+      </h3>
+      <div class="chart" id="chart-feat"></div>
+    </section>
+
+    <section class="panel" id="panel-predict">
+      <h3>实时预测对比 · 随机抽样
+        <button class="btn btn-mini" id="btn-random">随机抽一条</button>
+      </h3>
+      <div class="predict-box">
+        <div class="predict-text" id="predict-text">点击右上角按钮抽取一条评论…</div>
+        <div class="predict-meta" id="predict-meta"></div>
+        <div class="predict-bars" id="predict-bars"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 上传状态遮罩 -->
+  <div class="loading-mask" id="loading-mask">
+    <div class="loading-card">
+      <div class="loading-spinner"></div>
+      <div class="loading-text" id="loading-text">正在处理…</div>
+    </div>
+  </div>
+
+  <script src="/static/js/three-bg.js"></script>
+  <script src="/static/js/dashboard.js"></script>
+</body>
+</html>
